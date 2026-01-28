@@ -109,7 +109,9 @@ jobs:
       #   uses: actions/download-pages-artifact@v3
       #   with:
       #     path: _site
-
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        
       - name: Deploy Pages
         uses: actions/deploy-pages@v4
 
