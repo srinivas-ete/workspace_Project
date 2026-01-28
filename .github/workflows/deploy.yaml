@@ -54,7 +54,7 @@ jobs:
 
       - name: Run scripts
         run: |
-          for file in scripts/*; do
+          for file in script/*; do
             node $file
           done
 

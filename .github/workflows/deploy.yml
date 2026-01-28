@@ -53,7 +53,7 @@ jobs:
 
       - name: Run scripts in scripts folder
         run: |
-          for file in scripts/*; do
+          for file in script/*; do
             echo "Running $file"
             node $file
           done
