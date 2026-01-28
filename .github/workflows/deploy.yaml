@@ -105,10 +105,15 @@ jobs:
       issues: write
 
     steps:
+      # - name: Download Pages artifact
+      #   uses: actions/download-pages-artifact@v3
+      #   with:
+      #     path: _site
       - name: Download Pages artifact
-        uses: actions/download-pages-artifact@v3
+        uses: github/pages@v3
         with:
           path: _site
+
 
       - name: Deploy Pages
         uses: actions/deploy-pages@v4
