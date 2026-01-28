@@ -55,7 +55,7 @@ jobs:
       - name: Run scripts
         run: |
           shopt -s nullglob
-          for file in script/*; do
+          for file in script/*.js; do
             node $file
           done
 
