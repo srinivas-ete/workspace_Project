@@ -27,7 +27,7 @@ permissions:
   issues: write
 
 env:
-  NODE_VERSION: 18
+  NODE_VERSION: 20.18.1
 
 jobs:
   # ---------------- TEST JOB ----------------

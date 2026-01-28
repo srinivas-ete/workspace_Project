@@ -27,7 +27,7 @@ permissions:
   issues: write
 
 env:
-  NODE_VERSION: 18.12.1
+  NODE_VERSION: 20.18.1
 
 jobs:
   test:
@@ -42,8 +42,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - name: Downgrade npm
-        run: npm install -g npm@9.2.0
+     
       - name: Disable pagefind binary download
         run: echo "PAGEFIND_SKIP_DOWNLOAD=true">> $GITHUB_ENV
 
@@ -80,8 +79,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - name: Downgrade npm
-        run: npm install -g npm@9.2.0
+      
       - name: Disable pagefind binary download
         run: echo "PAGEFIND_SKIP_DOWNLOAD=true">> $GITHUB_ENV    
       - name: Install dependencies
