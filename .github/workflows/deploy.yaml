@@ -1,6 +1,7 @@
-name: Deploy knowledge Base
+name: Deploy Knowledge Base
+
 on:
-  push: 
+  push:
     branches:
       - main
     paths-ignore:
@@ -8,9 +9,11 @@ on:
       - 'README.md'
       - 'CONTRIBUTING.md'
       - 'LICENSE'
+
   pull_request:
     branches:
       - main
+
   workflow_dispatch:
 
 concurrency:
@@ -24,57 +27,67 @@ permissions:
   issues: write
 
 env:
-  NODE_VERSION: 18
+  NODE_VERSION: 18.12.1
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{env.NODE_VERSION}}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-      - name: Run linters
-        run: npm run lint:all
-      - name: Run scripts in scripts folder
-        run: |
-          for file in scripts/*; do
-            echo "Running $file"
-            node $file
-          done
-      - name: Run URL checker
-        env:
-          URL_CHECKER_TIMEOUT: ${{vars.URL_CHECKER_TIMEOUT }}
-        run: node script/url-checker.js --timeout $URL_CHECKER_TIMEOUT
-  build:
-    runs-on: ubuntu-latest
-    needs: test
-    timeout-minutes: 2
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v4
-
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+      - name: Downgrade npm
+        run: npm install -g npm@9.2.0
+      - name: Disable pagefind binary download
+        run: echo "PAGEFIND_SKIP_DOWNLOAD=true">> $GITHUB_ENV
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build static site
+      - name: Run linters
+        run: npm run lint:all
+
+      - name: Run scripts
+        run: |
+          for file in scripts/*; do
+            node $file
+          done
+
+      - name: Run URL checker
+        env:
+          URL_CHECKER_TIMEOUT: ${{ vars.URL_CHECKER_TIMEOUT }}
+        run: node script/url-checker.js --timeout $URL_CHECKER_TIMEOUT
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Downgrade npm
+        run: npm install -g npm@9.2.0
+      - name: Disable pagefind binary download
+        run: echo "PAGEFIND_SKIP_DOWNLOAD=true">> $GITHUB_ENV    
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
         env:
           PATH_PREFIX: "/${{ github.event.repository.name }}/"
         run: npm run eleventy:prod
@@ -83,35 +96,27 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-   deploy:
+
+  deploy:
     runs-on: ubuntu-latest
     needs: build
-    timeout-minutes: 2
 
     steps:
-      - name: Download built site
+      - name: Download artifact
         uses: actions/download-pages-artifact@v3
         with:
           path: _site
 
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - name: Deploy Pages
         uses: actions/deploy-pages@v4
 
-      - name: Report deployment status (create GitHub issue)
+      - name: Create deployment issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DATE=$(date +%Y-%m-%d)
           STATUS="${{ job.status }}"
-          if [ "$STATUS" == "success" ]; then
-            STATUS="succeeded"
-          else
-            STATUS="failed"
-          fi
-
+          if [ "$STATUS" = "success" ]; then STATUS="succeeded"; else STATUS="failed"; fi
           URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
 
-          gh issue create \
-            --title "$DATE Deployment: $STATUS" \
-            --body "URL: $URL"   
+          gh issue create --title "$DATE Deployment: $STATUS" --body "URL: $URL"
