@@ -103,8 +103,7 @@ jobs:
     steps:
       - name: Download artifact
         uses: actions/download-pages-artifact@v4
-        with:
-          path: _site
+        
 
       - name: Deploy Pages
         uses: actions/deploy-pages@v4
