@@ -39,7 +39,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Disable pagefind binary download
         run: echo "PAGEFIND_SKIP_DOWNLOAD=true" >> $GITHUB_ENV
@@ -77,7 +84,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Disable pagefind binary download
         run: echo "PAGEFIND_SKIP_DOWNLOAD=true" >> $GITHUB_ENV
@@ -105,13 +119,6 @@ jobs:
       issues: write
 
     steps:
-      # - name: Download Pages artifact
-      #   uses: actions/download-pages-artifact@v3
-      #   with:
-      #     path: _site
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-        
       - name: Deploy Pages
         uses: actions/deploy-pages@v4
 
